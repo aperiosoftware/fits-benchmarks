@@ -1,1 +1,2 @@
 data/ filter=lfs diff=lfs merge=lfs -text
+data/aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits filter=lfs diff=lfs merge=lfs -text
