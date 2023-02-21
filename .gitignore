@@ -1,5 +1,5 @@
 ### Python: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
-
+*prof
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
