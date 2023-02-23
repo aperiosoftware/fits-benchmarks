@@ -1,7 +1,7 @@
 import os
 from astropy.io import fits
 
-AIA_DATA = os.path.join(os.path.dirname(__file__), 'data', 'aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits')
+AIA_DATA = os.path.join(os.path.dirname(__file__), '..', 'data', 'aia_lev1_193a_2013_03_15t12_01_06_84z_image_lev1.fits')
 
 
 class TimeDataAccess:
