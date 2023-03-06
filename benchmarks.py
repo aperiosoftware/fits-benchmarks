@@ -1,6 +1,7 @@
 from pathlib import Path
 from functools import partial
 
+import tempfile
 import numpy as np
 from astropy.io.fits._tiled_compression.utils import _n_tiles
 from astropy.io import fits
@@ -44,6 +45,39 @@ def access_single_tile_aia(hdu):
 
 @benchmark(setup=open_file_aia, pyinstrument=dict(interval=0.0001))
 def access_data_aia(hdu):
+    return hdu.data
+
+
+def write_and_open(data, tile_size=[256, 256]):
+    hdul = fits.HDUList([
+        fits.PrimaryHDU(),
+        fits.CompImageHDU(
+            data=data,
+            compression_type="RICE_1",
+            tile_size=tile_size,
+        )
+    ])
+    file_path = tempfile.mkstemp(".fits")[1]
+    hdul.writeto(file_path)
+
+    return fits.open(file_path)[1]
+
+
+def make_and_open_float64():
+    return write_and_open(np.ones((4096, 4096), dtype=np.float64)),
+
+
+def make_and_open_float32():
+    return write_and_open(np.ones((4096, 4096), dtype=np.float32)),
+
+
+@benchmark(setup=make_and_open_float64, pyinstrument=dict(interval=0.0001))
+def access_data_float64(hdu):
+    return hdu.data
+
+
+@benchmark(setup=make_and_open_float32, pyinstrument=dict(interval=0.0001))
+def access_data_float32(hdu):
     return hdu.data
 
 
