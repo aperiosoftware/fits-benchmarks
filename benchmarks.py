@@ -3,7 +3,7 @@ from functools import partial
 
 import tempfile
 import numpy as np
-from astropy.io.fits._tiled_compression.utils import _n_tiles
+# from astropy.io.fits._tiled_compression.utils import _n_tiles
 from astropy.io import fits
 import dask
 dask.config.set(scheduler='synchronous')  # overwrite default with single-threaded scheduler
@@ -89,12 +89,12 @@ def load_dkist_dask_array(path):
         h = hdul[1].header
         tile_shape = tuple(h[f"ZTILE{z}"] for z in range(1, h["ZNAXIS"] + 1))[::-1]
         print(f"FITS tile shape is {tile_shape} (numpy order).")
-        print(f"File has {np.product(_n_tiles(hdul[1].data.shape, tile_shape))} tiles.")
+        # print(f"Each file has {np.product(_n_tiles(hdul[1].data.shape, tile_shape))} tiles.")
     return ds.data,
 
 
 def load_AKNPB():
-    return load_dkist_dask_array("/storfa/dkist/globus/pid_1_118/AKNPB")
+    return load_dkist_dask_array("/data/dkist/globus/pid_1_118/AKNPB")
 
 
 @benchmark(setup=load_AKNPB)
@@ -114,7 +114,7 @@ def dkist_access_single_chunk(data):
 
 
 def load_simulated_dkist(dataset):
-    base = Path("/storfa/dkist/tiled_performance")
+    base = Path("/data/dkist/tiled_performance")
     return load_dkist_dask_array(base / dataset)
 
 
@@ -126,3 +126,47 @@ def dkist_load_mosaic_row(data):
 @benchmark(partial(load_simulated_dkist, "square_tiles"))
 def dkist_load_mosaic_square(data):
     return data[0, :, 0, :].compute()
+
+
+def load_tiled_test(dataset):
+    base = Path("/data/dkist/globus/")
+    return load_dkist_dask_array(base / dataset)
+
+
+pre_visp_dataset = partial(load_tiled_test, Path("pre-tiling-test-data") / "pid_1_29" / "BKXYA")
+post_visp_dataset = partial(load_tiled_test, Path("post-tiling-test-data") / "pid_1_29" / "BEJZP")
+
+
+@benchmark(pre_visp_dataset)
+def dkist_visp_tiled_pre(data):
+    return data[0, 0, :, 0, :].compute()
+
+
+@benchmark(post_visp_dataset)
+def dkist_visp_tiled_post(data):
+    return data[0, 0, :, 0, :].compute()
+
+
+@benchmark(pre_visp_dataset)
+def dkist_visp_tiled_pre_single(data):
+    return data[0, 0, 0, :, :].compute()
+
+
+@benchmark(post_visp_dataset)
+def dkist_visp_tiled_post_single(data):
+    return data[0, 0, 0, :, :].compute()
+
+
+
+pre_vbi_dataset = partial(load_tiled_test, Path("pre-tiling-test-data") / "pid_1_29" / "BPJWY")
+post_vbi_dataset = partial(load_tiled_test, Path("post-tiling-test-data") / "pid_1_29" / "BDWRX")
+
+
+@benchmark(pre_vbi_dataset)
+def dkist_vbi_tiled_pre_single(data):
+    return data[0, :, :].compute()
+
+
+@benchmark(post_vbi_dataset)
+def dkist_vbi_tiled_post_single(data):
+    return data[0, :, :].compute()
